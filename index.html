@@ -1,0 +1,374 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="shortcut icon" href="Climate.ico" type="image/x-icon">
+    <title>全球任意地点海气要素查询工具</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript" src="nc_to_json_slp.json"></script>
+    <script type="text/javascript" src="nc_to_json_air.json"></script>
+    <script type="text/javascript" src="nc_to_json_precip.json"></script>
+    <script src="RGraph.common.core.js" ></script>
+    <script src="RGraph.common.context.js" ></script>
+    <script src="RGraph.common.sheets.js" ></script>
+    <script src="RGraph.line.js" ></script>
+    <script src="RGraph.bar.js" ></script>
+</head>
+<style type="text/css">
+    html,body{
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+    }
+    .map{
+        height: 500px;
+        width: 800px;
+        float: left;
+    }
+    *.mon,*.press,*.salt,*.tem,*.pre{
+        width: 20%;
+        font-size: 18px;
+    }
+</style>
+<body>
+    <h2 style="text-align: center;">全球任意地点海气要素查询工具</h2>
+
+<!-- <div class="input-card">
+    <h4>左击获取经纬度：</h4>
+    <div class="input-item">
+      <input type="text" readonly="true" id="lnglat">
+    </div>
+</div> -->
+    <div>
+        <div>
+            <div id="container" class="map" style="width: 800px;"></div> 
+        </div>
+        &nbsp;&nbsp;&nbsp;<font size="4px"><b>位置</b></font>&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="text0" value="经度,纬度" style="color: rgb(134, 138, 142);width: 300px;font-size: 18px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button style="font-size: 15px;">重置</button>
+        <!-- &nbsp;&nbsp;&nbsp;海平面气压&nbsp;&nbsp;<input type="text" id="text1" style="width: 300px;color: rgb(134, 138, 142);" value="海平面气压值 单位:hPa"><br><br> -->
+        <table border="2" style="width: 100%;text-align: center;">
+            <tr>
+                <th class="mon">月份</th>
+                <th class="press">海平面气压值(hPa)</th>
+                <th class="tem">气温(℃)</th>
+                <th class="pre">降水量(mm)</th>
+                <th class="salt">盐度(‰)<select style="font-size: 15px;text-align: center;">
+                    <option value="-1">深度</option>
+                    <option value="0">表层</option>
+                    <option value="1">100m</option>
+                    <option value="2">200m</option>
+                    <option value="3">300m</option>
+                    <option value="4">400m</option>
+                    <option value="5">500m</option>
+                    <option value="7">700m</option>
+                    <option value="8">800m</option>
+                    <option value="9">900m</option>
+                    <option value="10">1000m</option>
+                </select></th>
+            </tr>
+            <tr>
+                <td class="mon"><b>1月</b></b></td>
+                <td id="mon_1_sfp" class="press"></td>
+                <td id="mon_1_tem" class="tem"></td>
+                <td id="mon_1_pre" class="pre"></td>
+                <td id="mon_1_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>2月</b></td>
+                <td id="mon_2_sfp" class="press"></td>
+                <td id="mon_2_tem" class="tem"></td>
+                <td id="mon_2_pre" class="pre"></td>
+                <td id="mon_2_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>3月</b></td>
+                <td id="mon_3_sfp" class="press"></td>
+                <td id="mon_3_tem" class="tem"></td>
+                <td id="mon_3_pre" class="pre"></td>
+                <td id="mon_3_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>4月</b></td>
+                <td id="mon_4_sfp" class="press"></td>
+                <td id="mon_4_tem" class="tem"></td>
+                <td id="mon_4_pre" class="pre"></td>
+                <td id="mon_4_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>5月</b></td>
+                <td id="mon_5_sfp" class="press"></td>
+                <td id="mon_5_tem" class="tem"></td>
+                <td id="mon_5_pre" class="pre"></td>
+                <td id="mon_5_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>6月</b></td>
+                <td id="mon_6_sfp" class="press"></td>
+                <td id="mon_6_tem" class="tem"></td>
+                <td id="mon_6_pre" class="pre"></td>
+                <td id="mon_6_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>7月</b></td>
+                <td id="mon_7_sfp" class="press"></td>
+                <td id="mon_7_tem" class="tem"></td>
+                <td id="mon_7_pre" class="pre"></td>
+                <td id="mon_7_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>8月</b></td>
+                <td id="mon_8_sfp" class="press"></td>
+                <td id="mon_8_tem" class="tem"></td>
+                <td id="mon_8_pre" class="pre"></td>
+                <td id="mon_8_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>9月</b></td>
+                <td id="mon_9_sfp" class="press"></td>
+                <td id="mon_9_tem" class="tem"></td>
+                <td id="mon_9_pre" class="pre"></td>
+                <td id="mon_9_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>10月</b></td>
+                <td id="mon_10_sfp" class="press"></td>
+                <td id="mon_10_tem" class="tem"></td>
+                <td id="mon_10_pre" class="pre"></td>
+                <td id="mon_10_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>11月</b></td>
+                <td id="mon_11_sfp" class="press"></td>
+                <td id="mon_11_tem" class="tem"></td>
+                <td id="mon_11_pre" class="pre"></td>
+                <td id="mon_11_salt" class="salt"></td>
+            </tr>
+            <tr>
+                <td class="mon"><b>12月</b></td>
+                <td id="mon_12_sfp" class="press"></td>
+                <td id="mon_12_tem" class="tem"></td>
+                <td id="mon_12_pre" class="pre"></td>
+                <td id="mon_12_salt" class="salt"></td>
+            </tr>
+
+        </table>
+    </div>
+    <br>
+    <div>
+        <div style="position: relative;height: 400px;width: 25%;">
+            <canvas id="mycharts_0" style="width: 400px;height: 400px;"></canvas>
+        </div>
+        <div style="position: relative;height: 400px;width:25%">
+           <canvas id="mycharts_1"  style="width: 400px;height: 400px;align-items: center;"></canvas>
+        </div>
+        <div style="position: relative;height: 400px;width:25%">
+            <canvas id="mycharts_2"  style="width: 400px;height: 400px;align-items: center;"></canvas>
+         </div>
+         <div style="position: relative;height: 400px;width:25%">
+            <canvas id="mycharts_3"  style="width: 400px;height: 400px;align-items: center;"></canvas>
+         </div>
+    </div>
+<!--        
+       <canvas id="mycharts_2" ></canvas>
+       <canvas id="mycharts_3" ></canvas> -->
+    
+    
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=d1025316278284012bee2d43024c1311&plugin=AMap.Autocomplete"></script>
+<script type="text/javascript">
+    var map = new AMap.Map("container", {
+        resizeEnable: true,
+        zoom:1,
+        center:[0,0]
+    });
+    //为地图注册click事件获取鼠标点击出的经纬度坐标
+    map.on('click', function(e) {
+        // document.getElementById("text0").value = e.lnglat.getLng() + ',' + e.lnglat.getLat();
+        lon=e.lnglat.getLng();
+        lat=e.lnglat.getLat();
+        var lon_str="";
+        var lat_str="";
+        if (lon<0){
+            lon=Math.abs(lon);
+            var lon_str=lon.toFixed(1).toString()+"°W";
+        }else if(lon>0){
+            var lon_str=lon.toFixed(1).toString()+"°E";
+        }else if(lon=0){
+            var lon_str=lon.toFixed(1).toString();
+        }
+        if (lat<0){
+            lat=Math.abs(lat);
+            var lat_str=lat.toFixed(1).toString()+"°S";
+        }else if(lat>0){
+            var lat_str=lat.toFixed(1).toString()+"°N";
+        }else if(lat=0){
+            var lat_str=lat.toFixed(1).toString();
+        }
+        var lat_index=(((((e.lnglat.getLat().toFixed(1))/2.5).toFixed(0))*2.5).toFixed(1)).toString();
+        var lon_index=(((((e.lnglat.getLng().toFixed(1))/2.5).toFixed(0))*2.5).toFixed(1)).toString();
+        var lat_index_pre=(((((e.lnglat.getLat().toFixed(2))/2.5).toFixed(0))*2.5+1.25).toFixed(2)).toString();
+        var lon_index_pre=(((((e.lnglat.getLng().toFixed(2))/2.5).toFixed(0))*2.5+1.25).toFixed(2)).toString();
+        if(lon_index_pre>=0){
+            lon_index_pre=lon_index_pre;
+        }else if(lon_index_pre<0){
+            lon_index_pre=((parseFloat(lon_index_pre)+360).toFixed(2)).toString();
+        }
+        if (lon_index >= 0 ){
+            lon_index = lon_index;
+        }else if (lon_index < 0){
+            lon_index = ((Number(lon_index) + 360).toFixed(1)).toString();
+        }
+        // console.log(lat_str);
+        document.getElementById("text0").value = lon_str+","+lat_str;
+        document.getElementById("text0").style="color:black;width:300px;font-size:15px";
+        // document.getElementById("text1").value = datas[0][lat_index][lon_index].toFixed(2) +" "+"hPa";
+        var data_list=[];
+        var data_list_air=[];
+        var data_list_precip=[];
+        for (var i=0;i<=11;i++){
+            mm="mon_"+((i+1).toString())+"_sfp";
+            mm_air="mon_"+((i+1).toString())+"_tem";
+            mm_precip="mon_"+((i+1).toString())+"_pre";
+            var v=datas[i][lat_index][lon_index].toFixed(2);
+            var u=datas_air[i][lat_index][lon_index].toFixed(2);
+            var p=datas_precip[i][lat_index_pre][lon_index_pre].toFixed(2);
+
+            data_list.push(parseFloat(v));
+            data_list_air.push(parseFloat(u));
+            data_list_precip.push(parseFloat(p));
+            document.getElementById(mm).innerHTML=v;
+            document.getElementById(mm_air).innerHTML=u;
+            document.getElementById(mm_precip).innerHTML=p;
+        }
+        // alert(data_list);
+        // var MyCharts=new RGraph.Line("mycharts",data_list);
+        // MyCharts.Draw();
+        var line_0 = new RGraph.Line({
+            id: 'mycharts_0',
+            data: data_list,
+            options: {
+                // hmargin: ["1000","1100","1200"],
+                yaxisScaleMin:Math.min.apply(null,data_list),
+                yaxisScaleMax:Math.max.apply(null,data_list),
+                tickmarks: 'endcircle',
+                labels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"]
+            }
+        }).draw()
+
+        // var line_1 = new RGraph.Line({
+        //     id: 'mycharts_1',
+        //     data: data_list_air,
+        //     options: {
+        //         // hmargin: ["1000","1100","1200"],
+        //         yaxisScaleMin:Math.min.apply(null,data_list_air),
+        //         yaxisScaleMax:Math.max.apply(null,data_list_air),
+        //         tickmarks: 'endcircle',
+        //         combineEffect:"wave",
+        //         labels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"]
+        //     }
+        // });
+
+        // var bar_1 = new RGraph.Bar({
+        //     id: 'mycharts_1',
+        //     data: data_list_precip,
+        //     options: {
+        //         // hmargin: ["1000","1100","1200"],
+        //         yaxisScaleMin:Math.min.apply(null,data_list_precip),
+        //         yaxisScaleMax:Math.max.apply(null,data_list_precip),
+        //         tickmarks: 'endcircle',
+        //         yaxisPosition:'right',
+        //         combineEffect:'trace',
+        //         labels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"]
+        //     }
+        // });
+        
+        // var combom= new RGraph.CombinedChart([bar_1,line_1]).draw()
+
+    //     var line_2 = new RGraph.Line({
+    //         id: 'mycharts_2',
+    //         data: data_list,
+    //         options: {
+    //             // hmargin: ["1000","1100","1200"],
+    //             yaxisScaleMin:Math.min.apply(null,data_list),
+    //             yaxisScaleMax:Math.max.apply(null,data_list),
+    //             tickmarks: 'endcircle',
+    //             yaxisPosition:'right',
+    //             combineEffect:'trace',
+    //             labels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"]
+    //         }
+    //     }).draw()
+
+    //     var line_3 = new RGraph.Line({
+    //         id: 'mycharts_3',
+    //         data: data_list,
+    //         options: {
+    //             // hmargin: ["1000","1100","1200"],
+    //             yaxisScaleMin:Math.min.apply(null,data_list),
+    //             yaxisScaleMax:Math.max.apply(null,data_list),
+    //             tickmarks: 'endcircle',
+    //             labels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"]
+    //         }
+    //     }).draw()
+        bar = new RGraph.Bar({
+            id: 'mycharts_1',
+            data: data_list_precip,
+            options: {
+                yaxisScaleMax: Math.max(data_list_precip),
+                backgroundGridVlines: false,
+                backgroundGridBorder: false,
+                backgroundGridColor: '#999',
+                xaxisLabels: ['1月','2月','3月','4月','5月','6月','7月',"8月","9月","10月","11月","12月"],
+                marginLeft: 55,
+                marginRight: 55,
+                marginBottom: 45,
+                colors: ['Gradient(#A18AC5:#D1AAF5)'],
+                textColor: 'black',
+                xaxisTickmarksCount: 0,
+                xaxis: false,
+                yaxis: false,
+                shadowColor: 'black',
+                shadowOffsetx: 0,
+                shadowOffsety: 0,
+                shadowBlur: 15,
+                colorsStroke: 'rgba(0,0,0,0)',
+                combinedEffect: 'wave',
+                combinedEffectOptions: '{frames: 30}'
+            }
+        });
+
+
+
+        line = new RGraph.Line({
+            id: 'mycharts_1',
+            data: data_list_air,
+            options: {
+                yaxisScaleMax: Math.max(data_list_air),
+                xaxis: false,
+                yaxis: false,
+                backgroundGrid: false,
+                colors: ['#d00'],
+                yaxisPosition: 'right',
+                textColor: 'black',
+                marginLeft: 45,
+                marginRight: 45,
+                tickmarksStyle: null,
+                spline: true,
+                combinedEffect: 'trace',
+                // textSize: 18
+            }
+        });
+        
+        combo = new RGraph.CombinedChart([bar, line])
+            .draw();
+        
+            line.set({
+            yaxisScale: true
+        });
+
+        RGraph.redraw();
+    });
+</script>
+</body>
+</html>
